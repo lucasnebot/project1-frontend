@@ -8,7 +8,8 @@ trigger:
 
 stages:
 
-- stage: Build Stage
+- stage: Build_stage
+  displayName: 'Build Stage'
   jobs:
     - job: Build
       pool:
@@ -29,7 +30,8 @@ stages:
         artifact: WebApp
         displayName: 'Publish artifacts'
 
-- stage: Deploy stage
+- stage: Deploy_stage
+  displayName: "Deploy Stage"
   jobs:
     - job: Deploy
       pool:
@@ -38,6 +40,7 @@ stages:
 
       - download: current
         artifact: WebApp
+        displayName: 'Retrieve artifacts'
       - task: AzureFileCopy@4
         inputs:
           SourcePath: '$(Pipeline.Workspace)/WebApp'
