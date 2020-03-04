@@ -10,6 +10,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
@@ -20,3 +21,12 @@ steps:
     npm install
     npm run build
   displayName: 'npm install and build'
+
+- task: AzureFileCopy@4
+  inputs:
+    SourcePath: '${Build.Repository.LocalPath}\build'
+    azureSubscription: 'Pay-as-you-go(839b8638-287d-45d0-8a3c-dcaef5eac35f)'
+    Destination: 'AzureBlob'
+    storage: 'stfrontendproject1'
+    ContainerName: '$web'
+  displayName: 'Deploy to Azure storage account'
