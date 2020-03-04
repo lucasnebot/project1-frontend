@@ -48,7 +48,7 @@ stages:
           azureSubscription: 'Pay-as-you-go(839b8638-287d-45d0-8a3c-dcaef5eac35f)'
           scriptType: 'batch'
           scriptLocation: 'inlineScript'
-          inlineScript: 'az storage blob delete-batch --account-name stfrontendproject1 --source \$web'
+          inlineScript: 'az storage blob delete-batch --account-name stfrontendproject1 --source \$web --auth-mode login'
         displayName: 'Empty storage container'
       - task: AzureFileCopy@4
         inputs:
