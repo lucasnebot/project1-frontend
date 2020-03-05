@@ -6,27 +6,55 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+stages:
 
-steps:
+- stage: Build_stage
+  displayName: 'Build Stage'
+  jobs:
+    - job: Build
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '10.x'
+        displayName: 'Install Node.js'
 
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+      - script: |
+          npm install -g @angular/cli
+          npm install
+          npm run build
+        displayName: 'npm install and build'
 
-- script: |
-    npm install -g @angular/cli
-    npm install
-    npm run build
-  displayName: 'npm install and build'
+      - publish: $(Build.SourcesDirectory)/dist
+        artifact: WebApp
+        displayName: 'Publish artifacts'
 
-- task: AzureFileCopy@4
-  inputs:
-    SourcePath: '${Build.Repository.LocalPath}\build'
-    azureSubscription: 'Pay-as-you-go(839b8638-287d-45d0-8a3c-dcaef5eac35f)'
-    Destination: 'AzureBlob'
-    storage: 'stfrontendproject1'
-    ContainerName: '$web'
-  displayName: 'Deploy to Azure storage account'
+- stage: Deploy_stage
+  displayName: "Deploy Stage"
+  jobs:
+    - job: Deploy
+      pool:
+        vmImage: 'windows-latest'
+      steps:
+      - checkout: none
+
+      - download: current
+        artifact: WebApp
+        displayName: 'Retrieve artifacts'
+
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: 'Pay-as-you-go(839b8638-287d-45d0-8a3c-dcaef5eac35f)'
+          scriptType: 'batch'
+          scriptLocation: 'inlineScript'
+          inlineScript: 'az storage blob delete-batch --account-name stfrontendproject1 --source $web --auth-mode login'
+        displayName: 'Empty storage container'
+      - task: AzureFileCopy@4
+        inputs:
+          SourcePath: '$(Pipeline.Workspace)/WebApp/*'
+          azureSubscription: 'Pay-as-you-go(839b8638-287d-45d0-8a3c-dcaef5eac35f)'
+          Destination: 'AzureBlob'
+          storage: 'stfrontendproject1'
+          ContainerName: '$web'
+        displayName: 'Deploy to Azure storage account'
