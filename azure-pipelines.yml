@@ -2,12 +2,14 @@
 trigger:
 - master
 
+variables:
+  artifactName: WebApp
+  
 stages:
 
 - stage: Build_stage
   displayName: 'Build Stage'
-  variables:
-    artifactName: WebApp
+
   jobs:
     - job: Build
       pool:
